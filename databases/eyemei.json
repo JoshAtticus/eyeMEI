@@ -353,7 +353,13 @@
                 {
                     "iPhone 11 Pro Max": {
                         "tacs": [
-                            "35395810"
+                            "35395910",
+                            "35395810",
+                            "35392710",
+                            "35392610",
+                            "35392510",
+                            "35392410",
+                            "35392310"
                         ],
                         "alt_names": [],
                         "image": "public/images/devices/apple-iphone-11-pro-max.png"

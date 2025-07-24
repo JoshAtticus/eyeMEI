@@ -10,9 +10,14 @@ class eyeMEI {
         this.loadingSection = document.getElementById('loading-section');
         this.resultsSection = document.getElementById('results-section');
         this.errorModal = document.getElementById('error-modal');
-        this.databaseSelector = document.getElementById('database-selector');
+        this.dropdownSelected = document.getElementById('dropdown-selected');
+        this.dropdownOptions = document.getElementById('dropdown-options');
+        this.currentDatabaseValue = 'isthisphoneblocked';
+        
         this.bindEvents();
         this.formatIMEIInput();
+        this.initCustomDropdown();
+        this.loadDatabaseStats();
         console.log('Welcome to eyeMEI, an eye for IMEI. Created with <3 by JoshAtticus')
         console.log('Report issues, contribute or see the source code on GitHub: https://github.com/JoshAtticus/eyeMEI')
     }
@@ -30,12 +35,6 @@ class eyeMEI {
         this.errorModal.addEventListener('click', (e) => {
             if (e.target === this.errorModal) {
                 this.closeModal();
-            }
-        });
-
-        this.databaseSelector.addEventListener('change', () => {
-            if (!this.resultsSection.classList.contains('hidden')) {
-                this.performLookup();
             }
         });
     }
@@ -84,7 +83,7 @@ class eyeMEI {
         this.showLoading();
 
         try {
-            const databaseType = this.databaseSelector.value;
+            const databaseType = this.currentDatabaseValue;
             const response = await fetch('/api/lookup', {
                 method: 'POST',
                 headers: {
@@ -321,6 +320,102 @@ class eyeMEI {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    async loadDatabaseStats() {
+        try {
+            const response = await fetch('/api/database-stats');
+            if (response.ok) {
+                const stats = await response.json();
+                this.updateDropdownWithStats(stats);
+            }
+        } catch (error) {
+            console.log('Could not load database stats:', error);
+        }
+    }
+
+    updateDropdownWithStats(stats) {
+        const options = this.dropdownOptions.querySelectorAll('.dropdown-option');
+        options.forEach(option => {
+            const value = option.dataset.value;
+            const subElement = option.querySelector('.option-sub');
+        });
+        
+        // Update the selected option display as well
+        const selectedOption = this.dropdownOptions.querySelector('.dropdown-option.active');
+        if (selectedOption) {
+            const optionContent = selectedOption.querySelector('.option-content').cloneNode(true);
+            const currentContent = this.dropdownSelected.querySelector('.option-content');
+            currentContent.replaceWith(optionContent);
+        }
+    }
+
+    initCustomDropdown() {
+        this.dropdownSelected.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleDropdown();
+        });
+
+        this.dropdownOptions.addEventListener('click', (e) => {
+            const option = e.target.closest('.dropdown-option');
+            if (option) {
+                this.selectOption(option);
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.custom-dropdown')) {
+                this.closeDropdown();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.closeDropdown();
+            }
+        });
+    }
+
+    toggleDropdown() {
+        const isOpen = this.dropdownOptions.classList.contains('open');
+        if (isOpen) {
+            this.closeDropdown();
+        } else {
+            this.openDropdown();
+        }
+    }
+
+    openDropdown() {
+        this.dropdownSelected.classList.add('open');
+        this.dropdownOptions.classList.add('open');
+    }
+
+    closeDropdown() {
+        this.dropdownSelected.classList.remove('open');
+        this.dropdownOptions.classList.remove('open');
+    }
+
+    selectOption(optionElement) {
+        this.dropdownOptions.querySelectorAll('.dropdown-option').forEach(opt => {
+            opt.classList.remove('active');
+        });
+
+        optionElement.classList.add('active');
+
+        const optionContent = optionElement.querySelector('.option-content').cloneNode(true);
+        const currentContent = this.dropdownSelected.querySelector('.option-content');
+        currentContent.replaceWith(optionContent);
+
+        this.currentDatabaseValue = optionElement.dataset.value;
+
+        this.closeDropdown();
+
+        // Reload database stats when switching
+        this.loadDatabaseStats();
+
+        if (!this.resultsSection.classList.contains('hidden')) {
+            this.performLookup();
+        }
     }
 }
 

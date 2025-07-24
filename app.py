@@ -13,6 +13,7 @@ CORS(app)
 EYEMEI_JSON_PATH = 'databases/eyemei.json'
 OSMOCOM_JSON_PATH = 'databases/osmocom.json'
 ISTHISPHONEBLOCKED_JSON_PATH = 'databases/isthisphoneblocked.json'
+RANDOMMER_JSON_PATH = 'databases/randommer.json'
 
 class IMEIDatabase:
     def __init__(self, json_path):
@@ -189,6 +190,7 @@ class ExternalProviders:
 eyemei_db = IMEIDatabase(EYEMEI_JSON_PATH)
 osmocom_db = IMEIDatabase(OSMOCOM_JSON_PATH)
 isthisphoneblocked_db = IMEIDatabase(ISTHISPHONEBLOCKED_JSON_PATH)
+randommer_db = IMEIDatabase(RANDOMMER_JSON_PATH)
 
 @app.route('/')
 def index():
@@ -219,6 +221,9 @@ def lookup_imei():
     if database_type == 'osmocom':
         secondary_device_info = osmocom_db.lookup_tac(tac)
         secondary_db_name = 'OsmocomTAC'
+    elif database_type == 'randommer':
+        secondary_device_info = randommer_db.lookup_tac(tac)
+        secondary_db_name = 'Randommer'
     else:
         secondary_device_info = isthisphoneblocked_db.lookup_tac(tac)
         secondary_db_name = 'IsThisPhoneBlocked'
@@ -252,6 +257,37 @@ def privacy_info():
             'tac': 'TAC (Type Allocation Code) is the first 8 digits of an IMEI and identifies the device model, not your specific device.',
             'full_imei': 'Full IMEI is required by some providers for exact device matching and compatibility checks.'
         }
+    })
+
+@app.route('/api/database-stats')
+def database_stats():
+    """Return database statistics."""
+    def get_db_stats(db):
+        brands_data = db.data.get('brands', {})
+        total_brands = len(brands_data)
+        total_models = 0
+        total_tacs = 0
+        
+        for brand_name, brand_info in brands_data.items():
+            models = brand_info.get('models', [])
+            total_models += len(models)
+            for model_dict in models:
+                for model_name, model_info in model_dict.items():
+                    tacs = model_info.get('tacs', [])
+                    total_tacs += len(tacs)
+        
+        return {
+            'brands': total_brands,
+            'models': total_models,
+            'tacs': total_tacs
+        }
+    
+    return jsonify({
+        'eyemei': get_db_stats(eyemei_db),
+        'isthisphoneblocked': get_db_stats(isthisphoneblocked_db),
+        'osmocom': get_db_stats(osmocom_db),
+        'randommer': get_db_stats(randommer_db),
+        'last_updated': datetime.now().strftime('%d %B %Y')
     })
 
 if __name__ == '__main__':

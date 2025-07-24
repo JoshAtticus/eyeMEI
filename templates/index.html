@@ -75,10 +75,38 @@
                     <div class="card result-card osmocom-card">
                         <h3><i class="fas fa-archive"></i> Alternate Database</h3>
                         <div class="database-selector">
-                            <select id="database-selector" class="database-dropdown">
-                                <option value="isthisphoneblocked" selected>IsThisPhoneBlocked</option>
-                                <option value="osmocom">OsmocomTAC</option>
-                            </select>
+                            <div class="custom-dropdown">
+                                <div class="dropdown-selected" id="dropdown-selected">
+                                    <div class="option-content">
+                                        <div class="option-main">IsThisPhoneBlocked</div>
+                                        <div class="option-sub">Last updated: 24 July 2025</div>
+                                    </div>
+                                    <i class="fas fa-chevron-down dropdown-arrow"></i>
+                                </div>
+                                <div class="dropdown-options" id="dropdown-options">
+                                    <div class="dropdown-option active" data-value="isthisphoneblocked">
+                                        <div class="option-content">
+                                            <div class="option-main">IsThisPhoneBlocked</div>
+                                            <div class="option-sub">Last crawl: 24 July 2025</div>
+                                            <div class="option-sub">Very large amount of data, reliable and up-to-date</div>
+                                        </div>
+                                    </div>
+                                    <div class="dropdown-option" data-value="osmocom">
+                                        <div class="option-content">
+                                            <div class="option-main">OsmocomTAC</div>
+                                            <div class="option-sub">Last crawl: 24 July 2025</div>
+                                            <div class="option-sub">Large amount of data, reliable for devices released ≤2016</div>
+                                        </div>
+                                    </div>
+                                    <div class="dropdown-option" data-value="randommer">
+                                        <div class="option-content">
+                                            <div class="option-main">Randommer</div>
+                                            <div class="option-sub">Last crawl: 24 July 2025</div>
+                                            <div class="option-sub">Moderate amount of data, somewhat reliable for devices released ≤2019</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div id="secondary-db-info" class="info-section">
                             <div id="secondary-db-details" class="info-details">
