@@ -197,6 +197,16 @@ def index():
     """Serve the main page."""
     return render_template('index.html')
 
+@app.route('/privacy-policy')
+def privacy_policy():
+    """Serve the privacy policy page."""
+    return render_template('privacy-policy.html')
+
+@app.route('/terms-of-service')
+def terms_of_service():
+    """Serve the terms of service page."""
+    return render_template('terms-of-service.html')
+
 @app.route('/public/<path:filename>')
 def serve_public_files(filename):
     """Serve files from the public directory."""

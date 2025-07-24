@@ -13,11 +13,14 @@ class eyeMEI {
         this.dropdownSelected = document.getElementById('dropdown-selected');
         this.dropdownOptions = document.getElementById('dropdown-options');
         this.currentDatabaseValue = 'isthisphoneblocked';
-        
+        this.consentModal = document.getElementById('consent-modal');
+        this.privacyModal = document.getElementById('privacy-modal');
+        this.termsModal = document.getElementById('terms-modal');
         this.bindEvents();
         this.formatIMEIInput();
         this.initCustomDropdown();
         this.loadDatabaseStats();
+        this.checkConsent();
         console.log('Welcome to eyeMEI, an eye for IMEI. Created with <3 by JoshAtticus')
         console.log('Report issues, contribute or see the source code on GitHub: https://github.com/JoshAtticus/eyeMEI')
     }
@@ -25,16 +28,39 @@ class eyeMEI {
     bindEvents() {
         this.imeiForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            this.performLookup();
+            if (this.hasConsent()) {
+                this.performLookup();
+            } else {
+                this.showConsentModal();
+            }
         });
 
-        document.querySelector('.close').addEventListener('click', () => {
-            this.closeModal();
+        document.getElementById('accept-btn').addEventListener('click', () => {
+            this.acceptConsent();
         });
 
-        this.errorModal.addEventListener('click', (e) => {
-            if (e.target === this.errorModal) {
-                this.closeModal();
+        document.getElementById('decline-btn').addEventListener('click', () => {
+            this.declineConsent();
+        });
+
+        document.querySelectorAll('.close').forEach(closeBtn => {
+            closeBtn.addEventListener('click', (e) => {
+                const modalId = closeBtn.getAttribute('data-modal');
+                if (modalId) {
+                    this.closeModal(modalId);
+                } else {
+                    this.closeModal();
+                }
+            });
+        });
+
+        [this.errorModal, this.privacyModal, this.termsModal].forEach(modal => {
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        this.closeModal(modal.id);
+                    }
+                });
             }
         });
     }
@@ -305,16 +331,6 @@ class eyeMEI {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    showError(message) {
-        const errorMessage = document.getElementById('error-message');
-        errorMessage.textContent = message;
-        this.errorModal.classList.remove('hidden');
-    }
-
-    closeModal() {
-        this.errorModal.classList.add('hidden');
-    }
-
     escapeHtml(text) {
         if (!text) return '';
         const div = document.createElement('div');
@@ -341,7 +357,6 @@ class eyeMEI {
             const subElement = option.querySelector('.option-sub');
         });
         
-        // Update the selected option display as well
         const selectedOption = this.dropdownOptions.querySelector('.dropdown-option.active');
         if (selectedOption) {
             const optionContent = selectedOption.querySelector('.option-content').cloneNode(true);
@@ -410,31 +425,105 @@ class eyeMEI {
 
         this.closeDropdown();
 
-        // Reload database stats when switching
         this.loadDatabaseStats();
 
         if (!this.resultsSection.classList.contains('hidden')) {
             this.performLookup();
         }
     }
+
+    hasConsent() {
+        return localStorage.getItem('eyemei_consent') === 'accepted';
+    }
+
+    checkConsent() {
+        if (!this.hasConsent()) {
+            setTimeout(() => {
+                this.showConsentModal();
+            }, 500);
+        }
+    }
+
+    acceptConsent() {
+        localStorage.setItem('eyemei_consent', 'accepted');
+        localStorage.setItem('eyemei_consent_date', new Date().toISOString());        
+        this.closeModal('consent-modal');
+        
+        const imei = this.imeiInput.value.trim();
+        if (imei && this.validateIMEI(imei)) {
+            this.performLookup();
+        }
+    }
+
+    declineConsent() {
+        localStorage.setItem('eyemei_consent', 'declined');        
+        this.closeModal('consent-modal');
+        this.showError('You must accept the Privacy Policy and Terms of Service to use eyeMEI.');
+    }
+
+    showConsentModal() {
+        this.showModal('consent-modal');
+    }
+
+    showModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.add('show');
+            }, 10);
+            
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    closeModal(modalId = 'error-modal') {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }, 300);
+        }
+    }
+
+    showError(message) {
+        const errorMessage = document.getElementById('error-message');
+        errorMessage.textContent = message;
+        this.showModal('error-modal');
+    }
 }
 
+let eyeMEIInstance = null;
+
 function closeModal() {
-    document.getElementById('error-modal').classList.add('hidden');
+    if (eyeMEIInstance) {
+        eyeMEIInstance.closeModal('error-modal');
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    new eyeMEI();
+    eyeMEIInstance = new eyeMEI();
 });
 
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-        closeModal();
+        if (eyeMEIInstance) {
+            const visibleModals = document.querySelectorAll('.modal.show');
+            if (visibleModals.length > 0) {
+                const lastModal = visibleModals[visibleModals.length - 1];
+                eyeMEIInstance.closeModal(lastModal.id);
+            }
+        }
     }
     
     if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
         e.preventDefault();
-        document.getElementById('imei-input').focus();
+        const imeiInput = document.getElementById('imei-input');
+        if (imeiInput && eyeMEIInstance && eyeMEIInstance.hasConsent()) {
+            imeiInput.focus();
+        }
     }
 });
 

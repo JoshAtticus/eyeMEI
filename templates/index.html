@@ -173,15 +173,58 @@
     <footer class="footer">
         <div class="container">
             <p>&copy; 2025 JoshAtticus | Report issues, contribute or see the source code on <a href="https://github.com/JoshAtticus/eyeMEI" target="_blank" style="color: white; text-decoration: underline;">GitHub</a></p>
+            <p style="margin-top: 8px;">
+                <a href="/privacy-policy" style="color: #888888; text-decoration: underline;">Privacy Policy</a> | 
+                <a href="/terms-of-service" style="color: #888888; text-decoration: underline;">Terms of Service</a>
+            </p>
         </div>
     </footer>
 
+    <!-- Consent Modal -->
+    <div id="consent-modal" class="modal consent-modal">
+        <div class="modal-content consent-content">
+            <h4><i class="fas fa-user-shield"></i> Privacy & Terms</h4>
+            <div class="consent-text">
+                <p>Welcome to eyeMEI! Before you begin, please review and accept our Privacy Policy and Terms of Service.</p>
+                
+                <div class="consent-summary">
+                    <h5>What we collect:</h5>
+                    <ul>
+                        <li>TAC (first 8 digits of IMEI) for device identification & service improvement</li>
+                        <li>Anonymous usage statistics</li>
+                        <li>IP Address for ratelimiting and abuse prevention</li>
+                        <li>No other information or full IMEIs are stored</li>
+                    </ul>
+                    
+                    <h5>External services:</h5>
+                    <ul>
+                        <li>Telstra API (TAC only)</li>
+                        <li>AMTA API (full IMEI)</li>
+                    </ul>
+                </div>
+                
+            </div>
+
+            <p style="margin-top: 16px;">
+                    By continuing, you agree to our 
+                    <a href="#" id="view-privacy" style="color: #ffffff; text-decoration: underline;">Privacy Policy</a> and 
+                    <a href="#" id="view-terms" style="color: #ffffff; text-decoration: underline;">Terms of Service</a>.
+            </p>
+            
+            <div class="consent-buttons">
+                <button id="decline-btn" class="btn-secondary">Decline</button>
+                <button id="accept-btn" class="btn-primary">Accept & Continue</button>
+            </div>
+        </div>
+    </div>
+
+
     <div id="error-modal" class="modal hidden">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            <h4><i class="fas fa-exclamation-triangle"></i> Error</h4>
+            <span class="close" data-modal="error-modal">&times;</span>
+            <h4 class="error-title"><i class="fas fa-exclamation-triangle"></i> Error</h4>
             <p id="error-message"></p>
-            <button class="btn-primary" onclick="closeModal()">OK</button>
+            <button class="btn-primary" onclick="window.location.reload()">OK</button>
         </div>
     </div>
 

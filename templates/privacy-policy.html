@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - eyeMEI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <a href="/" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 12px;">
+                    <i class="fas fa-eye"></i>
+                    <span class="logo-text">eyeMEI</span>
+                </a>
+            </div>
+            <p class="tagline">An Eye for IMEI</p>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <a href="/" class="back-link">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Home
+                </a>
+                <h1>Privacy Policy</h1>
+                <p class="last-updated">Last updated: July 24, 2025</p>
+            </div>
+
+            <section class="content-section">
+                <div class="card">
+                    <div class="policy-content">
+                        <h2>1. Information We Collect</h2>
+                        <p>eyeMEI collects minimal information necessary to provide device identification services:</p>
+                        <ul>
+                            <li><strong>TAC (Type Allocation Code):</strong> The first 8 digits of your IMEI, used to identify device model</li>
+                            <li><strong>Usage Analytics:</strong> Anonymous statistics about service usage to improve our service</li>
+                            <li><strong>IP Address:</strong> Temporarily logged for rate limiting and abuse prevention</li>
+                            <li><strong>No Personal Data:</strong> We do not store full IMEIs, names, emails, or other personal information</li>
+                        </ul>
+
+                        <h2>2. How We Use Information</h2>
+                        <p>The information we collect is used solely for:</p>
+                        <ul>
+                            <li>Device identification and compatibility checking</li>
+                            <li>Improving our database accuracy and coverage</li>
+                            <li>Service optimization and performance analytics</li>
+                            <li>Preventing abuse and ensuring fair usage</li>
+                        </ul>
+
+                        <h2>3. Third-Party Services</h2>
+                        <p>We share limited data with external providers to enhance our service:</p>
+                        <ul>
+                            <li><strong>Telstra API:</strong> We send only the TAC (first 8 digits) to check device compatibility</li>
+                            <li><strong>AMTA API:</strong> We send the full IMEI for Australian network compatibility verification</li>
+                        </ul>
+                        <p>These services have their own privacy policies. We recommend reviewing them if you have concerns.</p>
+
+                        <h2>4. Data Storage and Retention</h2>
+                        <ul>
+                            <li>TACs may be stored indefinitely to improve our database</li>
+                            <li>Full IMEIs are never stored on our servers</li>
+                            <li>IP addresses are logged temporarily for security purposes</li>
+                            <li>Your consent preferences are saved locally in your browser</li>
+                            <li>No cookies are used for tracking purposes</li>
+                        </ul>
+
+                        <h2>5. Data Security</h2>
+                        <p>We implement appropriate security measures to protect your data:</p>
+                        <ul>
+                            <li>HTTPS encryption for all communications</li>
+                            <li>Minimal data collection principle</li>
+                            <li>Regular security audits of our systems</li>
+                            <li>No long-term storage of sensitive information</li>
+                        </ul>
+
+                        <h2>6. Your Rights</h2>
+                        <p>Under applicable privacy laws, you have the right to:</p>
+                        <ul>
+                            <li>Withdraw consent at any time by clearing your browser data</li>
+                            <li>Request information about data we may have collected</li>
+                            <li>Request deletion of any data associated with your usage</li>
+                            <li>File a complaint with relevant data protection authorities</li>
+                        </ul>
+
+                        <h2>7. Children's Privacy</h2>
+                        <p>Our service is not intended for children under 13. We do not knowingly collect personal information from children under 13.</p>
+
+                        <h2>8. International Users</h2>
+                        <p>eyeMEI is operated from Australia. By using our service, you consent to the transfer of your data to Australia for processing.</p>
+
+                        <h2>9. Changes to This Policy</h2>
+                        <p>We may update this Privacy Policy from time to time. We will notify users of any material changes by updating the "Last updated" date. Continued use of the service constitutes acceptance of the updated policy.</p>
+
+                        <h2>10. Contact Us</h2>
+                        <p>If you have questions about this Privacy Policy, please contact us:</p>
+                        <ul>
+                            <li>Via our <a href="https://github.com/JoshAtticus/eyeMEI" target="_blank">GitHub repository</a></li>
+                            <li>By opening an issue on GitHub for privacy-related concerns</li>
+                        </ul>
+
+                        <div class="policy-summary-box">
+                            <h3><i class="fas fa-info-circle"></i> Summary</h3>
+                            <p>eyeMEI is designed with privacy in mind. We only collect the minimum data necessary to identify your device model and check compatibility. Your full IMEI is never stored, and we don't collect any personal information about you.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 JoshAtticus | Report issues, contribute or see the source code on <a href="https://github.com/JoshAtticus/eyeMEI" target="_blank" style="color: white; text-decoration: underline;">GitHub</a></p>
+            <p style="margin-top: 8px;">
+                <a href="/privacy-policy" style="color: #888888; text-decoration: underline;">Privacy Policy</a> | 
+                <a href="/terms-of-service" style="color: #888888; text-decoration: underline;">Terms of Service</a>
+            </p>
+        </div>
+    </footer>
+</body>
+</html>
