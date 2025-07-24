@@ -1,0 +1,383 @@
+{
+    "brands": {
+        "Samsung": {
+            "models": [
+                {
+                    "Galaxy S2 (Telstra)": {
+                        "tacs": [
+                            "35886704"
+                        ],
+                        "alt_names": ["Galaxy S II", "GT-I9100T"],
+                        "image": ""
+                    }
+                },
+                {
+                    "Galaxy S II": {
+                        "tacs": [
+                            "35260505"
+                        ],
+                        "alt_names": ["Galaxy S2", "GT-I9100"],
+                        "image": ""
+                    }
+                },
+                {
+                    "Galaxy S4 4G": {
+                        "tacs": [
+                            "35626605"
+                        ],
+                        "alt_names": ["Galaxy S4 LTE", "Galaxy S 4", "GT-I9505"],
+                        "image": ""
+                    }
+                },
+                {
+                    "Galaxy Note 3": {
+                        "tacs": [
+                            "35242106"
+                        ],
+                        "alt_names": ["SM-N9007"],
+                        "image": "public/images/devices/samsung-galaxy-note-3.png"
+                    }
+                },
+                {
+                    "Galaxy S7": {
+                        "tacs": [
+                            "35881007",
+                            "35214310",
+                            "35260109",
+                            "35501707",
+                            "35501807",
+                            "35523008",
+                            "35639708",
+                            "35645709",
+                            "35690507",
+                            "35690607"
+                        ],
+                        "alt_names": ["SM-G930F"],
+                        "image": "public/images/devices/samsung-galaxy-s7.png"
+                    }
+                },
+                {
+                    "Galaxy S8": {
+                        "tacs": [
+                            "35781608",
+                            "35171710",
+                            "35280210",
+                            "35508908",
+                            "35525709",
+                            "35680809",
+                            "35805408",
+                            "35805508",
+                            "35805608",
+                            "35813809",
+                            "35462609",
+                            "35866608",
+                            "35866708",
+                            "35879308",
+                            "35895708",
+                            "35903708",
+                            "35903808",
+                            "35903908",
+                            "35904008",
+                            "35904108",
+                            "35904208"
+                        ],
+                        "alt_names": ["SM-G950F"],
+                        "image": "public/images/devices/samsung-galaxy-s8.png"
+                    }
+                },
+                {
+                    "Galaxy S9": {
+                        "tacs": [
+                            "35280209",
+                            "35247523",
+                            "35589409",
+                            "35589509",
+                            "35589609",
+                            "35620110",
+                            "35620210",
+                            "35620310",
+                            "35620410",
+                            "35620510",
+                            "35620610",
+                            "35644125",
+                            "35716409",
+                            "35803772",
+                            "35345067",
+                            "35346710",
+                            "35896609",
+                            "35966409",
+                            "35969623"
+                        ],
+                        "alt_names": ["SM-G960F"],
+                        "image": "public/images/devices/samsung-galaxy-s9.png"
+                    }
+                },
+                {
+                    "Galaxy S9 (United States)": {
+                        "tacs": [
+                            "35241009",
+                            "35312509",
+                            "35330109",
+                            "35330209",
+                            "35330409",
+                            "35330509",
+                            "35330609",
+                            "35330709",
+                            "35330809",
+                            "35330909",
+                            "35331009",
+                            "35331109",
+                            "35502609",
+                            "35502709",
+                            "35502809",
+                            "35502909",
+                            "35641709",
+                            "35641809",
+                            "35641909",
+                            "35994309",
+                            "35994409",
+                            "35994509",
+                            "35691509",
+                            "35691609",
+                            "35691709",
+                            "35691909",
+                            "35692009",
+                            "35792909",
+                            "35481609",
+                            "35481709",
+                            "35482009",
+                            "35482109",
+                            "35482209",
+                            "35482309",
+                            "35482409",
+                            "35482509",
+                            "35819210",
+                            "35860609",
+                            "35860709",
+                            "35860809",
+                            "35860909",
+                            "35861009",
+                            "35861109"
+                        ],
+                        "alt_names": ["SM-G960U", "SM-G960U1"],
+                        "image": "public/images/devices/samsung-galaxy-s9.png"
+                    }
+                },
+                {
+                    "Galaxy S9 Dual SIM": {
+                        "tacs": [
+                            "35271109",
+                            "35271209",
+                            "35332510",
+                            "35332610",
+                            "35589709",
+                            "35589809",
+                            "35589909",
+                            "35590009",
+                            "35605109",
+                            "35605209",
+                            "35605309",
+                            "35605409",
+                            "35605509",
+                            "35605609",
+                            "35620410",
+                            "35620510",
+                            "35620610",
+                            "35620710",
+                            "35620810",
+                            "35620910",
+                            "35715309",
+                            "35715409",
+                            "35717109",
+                            "35717209",
+                            "35798809",
+                            "35798909",
+                            "35466310",
+                            "35466410",
+                            "35862409",
+                            "35862509",
+                            "35896209",
+                            "35896309",
+                            "35896409",
+                            "35896509"
+                        ],
+                        "alt_names": ["SM-G960F/DS"],
+                        "image": "public/images/devices/samsung-galaxy-s9.png"
+                    }
+                },
+                {
+                    "Galaxy Tab S 10.5 LTE": {
+                        "tacs": [
+                            "35420206"
+                        ],
+                        "alt_names": ["SM-T805Y"],
+                        "image": "public/images/devices/samsung-galaxy-tab-s-10-5.png"
+                    }
+                }
+            ]
+        },
+        "Google": {
+            "models": [
+                {
+                    "Pixel 8 Pro": {
+                        "tacs": [
+                            "35895161"
+                        ],
+                        "alt_names": [],
+                        "image": "public/images/devices/google-pixel-8-pro.png"
+                    }
+                }
+            ]
+        },
+        "Opel Mobile": {
+            "models": [
+                {
+                    "TouchFlip": {
+                        "tacs": [
+                            "35338143"
+                        ],
+                        "alt_names": ["OMTF228"],
+                        "image": "public/images/devices/opel-mobile-touch-flip.webp"
+                    }
+                }
+            ]
+        },
+        "Nokia": {
+            "models": [
+                {
+                    "6300": {
+                        "tacs": [
+                            "35767101"
+                        ],
+                        "alt_names": ["RM-217"],
+                        "image": "public/images/devices/nokia-6300.webp"
+                    }
+                }
+            ]
+        },
+        "LG": {
+            "models": [
+                {
+                    "K40S": {
+                        "tacs": [
+                            "35894410"
+                        ],
+                        "alt_names": ["LM-X430"],
+                        "image": "public/images/devices/lg-k40s.png"
+                    }
+                }
+            ]
+        },
+        "Huawei": {
+            "models": [
+                {
+                    "E585": {
+                        "tacs": [
+                            "35730904"
+                        ],
+                        "alt_names": ["Mobile WiFi", "Pocket WiFi 2", "E585u"],
+                        "image": "public/images/devices/huawei-e585.png"
+                    }
+                },
+                {
+                    "E173u-2": {
+                        "tacs": [
+                            "86987800"
+                        ],
+                        "alt_names": [],
+                        "image": ""
+                    }
+                }
+            ]
+        },
+        "Apple": {
+            "models": [
+                {
+                    "iPhone 5s": {
+                        "tacs": [
+                            "35803005"
+                        ],
+                        "alt_names": [],
+                        "image": "public/images/devices/apple-iphone-5s.png"
+                    }
+                },
+                {
+                    "iPhone 6": {
+                        "tacs": [
+                            "35925206",
+                            "35442706"
+                        ],
+                        "alt_names": [],
+                        "image": "public/images/devices/apple-iphone-6.png"
+                    }
+                },
+                {
+                    "iPhone 7 Plus": {
+                        "tacs": [
+                            "35381608"
+                        ],
+                        "alt_names": [],
+                        "image": "public/images/devices/apple-iphone-7-plus.png"
+                    }
+                },
+                {
+                    "iPhone 8": {
+                        "tacs": [
+                            "35608009",
+                            "35670308",
+                            "35489009"
+                        ],
+                        "alt_names": [],
+                        "image": "public/images/devices/apple-iphone-8.png"
+                    }
+                },
+                {
+                    "iPhone Xr": {
+                        "tacs": [
+                            "35642310"
+                        ],
+                        "alt_names": [],
+                        "image": "public/images/devices/apple-iphone-xr.png"
+                    }
+                },
+                {
+                    "iPhone 11 Pro": {
+                        "tacs": [
+                            "35384210",
+                            "35383910"
+                        ],
+                        "alt_names": [],
+                        "image": "public/images/devices/apple-iphone-11-pro.png"
+                    }
+                },
+                {
+                    "iPhone 11 Pro Max": {
+                        "tacs": [
+                            "35395810"
+                        ],
+                        "alt_names": [],
+                        "image": "public/images/devices/apple-iphone-11-pro-max.png"
+                    }
+                },
+                {
+                    "iPhone 12": {
+                        "tacs": [
+                            "35303111"
+                        ],
+                        "alt_names": [],
+                        "image": "public/images/devices/apple-iphone-12.png"
+                    }
+                },
+                {
+                    "iPad Pro (11-inch) (2nd Generation)": {
+                        "tacs": [
+                            "35662210"
+                        ],
+                        "alt_names": ["A2230"],
+                        "image": "public/images/devices/apple-ipad-pro-11-2020.png"
+                    }
+                }
+            ]
+        }
+    }
+}

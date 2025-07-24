@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eyeMEI - An Eye for IMEI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-eye"></i>
+                <span class="logo-text">eyeMEI</span>
+            </div>
+            <p class="tagline">An Eye for IMEI</p>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <section class="input-section">
+                <div class="card">
+                    <h2>Try eyeMEI</h2>
+                    <p class="description">
+                        Enter your 15-digit IMEI number to have a look at what eyeMEI can see about your device.
+                    </p>
+                    
+                    <form id="imei-form" class="imei-form">
+                        <div class="input-group">
+                            <input 
+                                type="text" 
+                                id="imei-input" 
+                                placeholder="123456789012345"
+                                maxlength="15"
+                                pattern="[0-9]{15}"
+                                required
+                            >
+                            <button type="submit" id="lookup-btn">
+                                <i class="fas fa-search"></i>
+                                Lookup IMEI
+                            </button>
+                        </div>
+                        <div class="input-help">
+                            <small>
+                                <i class="fas fa-info-circle"></i>
+                                Find your IMEI by dialing *#06# on your phone or checking device settings
+                            </small>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <section id="loading-section" class="loading-section hidden">
+                <div class="card">
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </div>
+                    <p>Checking...</p>
+                </div>
+            </section>
+
+            <section id="results-section" class="results-section hidden">
+                <div class="results-grid">
+                    <div class="card result-card database-card">
+                        <h3><i class="fas fa-database"></i> eyeMEI Database</h3>
+                        <div id="database-info" class="info-section">
+                            <div id="database-details" class="info-details">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card result-card osmocom-card">
+                        <h3><i class="fas fa-archive"></i> Alternate Database</h3>
+                        <div class="database-selector">
+                            <select id="database-selector" class="database-dropdown">
+                                <option value="isthisphoneblocked" selected>IsThisPhoneBlocked</option>
+                                <option value="osmocom">OsmocomTAC</option>
+                            </select>
+                        </div>
+                        <div id="secondary-db-info" class="info-section">
+                            <div id="secondary-db-details" class="info-details">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card result-card providers-card">
+                        <h3><i class="fas fa-shield-alt"></i> Network Status</h3>
+                        <div id="provider-checks" class="info-section">
+                            <div id="provider-results" class="provider-results">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons 
+                <div class="action-buttons">
+                    <button id="new-lookup-btn" class="btn-secondary">
+                        <i class="fas fa-plus"></i>
+                        Check Another IMEI
+                    </button>
+                </div> -->
+            </section>
+
+            <!-- Privacy Notice Section
+            <section class="privacy-section">
+                <div class="card">
+                    <h3><i class="fas fa-user-shield"></i> Privacy & Data Usage</h3>
+                    <p class="privacy-summary">
+                        Your privacy is important. We only share the minimum required data with each provider.
+                    </p>
+                    
+                    <button id="privacy-details-btn" class="btn-link">
+                        <i class="fas fa-chevron-down"></i>
+                        View Privacy Details
+                    </button>
+                    
+                    <div id="privacy-details" class="privacy-details hidden">
+                        <div class="privacy-content">
+                            <div class="privacy-item">
+                                <h5>TAC Only Providers</h5>
+                                <p>These providers receive only your <strong>TAC</strong> (first 8 digits) - this identifies your device model but not your specific device:</p>
+                                <ul id="tac-providers"></ul>
+                            </div>
+                            
+                            <div class="privacy-item">
+                                <h5>Full IMEI Providers</h5>
+                                <p>These providers require your <strong>full IMEI</strong> for exact device matching:</p>
+                                <ul id="full-imei-providers"></ul>
+                            </div>
+                            
+                            <div class="privacy-item">
+                                <h5>Data Storage</h5>
+                                <p id="data-storage-info"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section> -->
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 JoshAtticus | Report issues, contribute or see the source code on <a href="https://github.com/JoshAtticus/eyeMEI" target="_blank" style="color: white; text-decoration: underline;">GitHub</a></p>
+        </div>
+    </footer>
+
+    <div id="error-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h4><i class="fas fa-exclamation-triangle"></i> Error</h4>
+            <p id="error-message"></p>
+            <button class="btn-primary" onclick="closeModal()">OK</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
