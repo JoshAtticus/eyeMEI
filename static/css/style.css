@@ -13,6 +13,7 @@
 /* For Firefox */
 html {
     scrollbar-width: none;
+    scroll-behavior: smooth;
 }
 
 /* For IE and Edge */
@@ -754,11 +755,124 @@ body {
     border-color: #45a049;
 }
 
+.page-header {
+    margin-bottom: 32px;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #a0a0a0;
+    text-decoration: none;
+    font-size: 14px;
+    margin-bottom: 16px;
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: #e5e5e5;
+}
+
+.page-header h1 {
+    font-size: 32px;
+    font-weight: 700;
+    color: #e5e5e5;
+    margin-bottom: 8px;
+}
+
+.last-updated {
+    color: #666666;
+    font-size: 14px;
+    font-style: italic;
+}
+
+.content-section {
+    margin-bottom: 40px;
+}
+
 .policy-content {
-    max-width: 600px;
-    max-height: 80vh;
+    max-width: none;
+    max-height: none;
+    display: block;
+}
+
+.policy-content h2 {
+    color: #e5e5e5;
+    font-size: 24px;
+    font-weight: 600;
+    margin: 32px 0 16px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #333333;
+}
+
+.policy-content h2:first-of-type {
+    margin-top: 0;
+}
+
+.policy-content h3 {
+    color: #e5e5e5;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 24px 0 12px 0;
+}
+
+.policy-content p {
+    color: #a0a0a0;
+    line-height: 1.7;
+    margin-bottom: 16px;
+    font-size: 16px;
+}
+
+.policy-content ul {
+    margin: 16px 0;
+    padding-left: 24px;
+}
+
+.policy-content li {
+    color: #a0a0a0;
+    margin-bottom: 8px;
+    line-height: 1.6;
+}
+
+.policy-content li strong {
+    color: #e5e5e5;
+    font-weight: 600;
+}
+
+.policy-content a {
+    color: #4CAF50;
+    text-decoration: underline;
+    transition: color 0.3s ease;
+}
+
+.policy-content a:hover {
+    color: #45a049;
+}
+
+.policy-summary-box {
+    background: rgba(76, 175, 80, 0.1);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 32px 0;
+}
+
+.policy-summary-box h3 {
+    color: #4CAF50;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 12px;
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.policy-summary-box p {
+    color: #b8b8b8;
+    margin-bottom: 0;
+    font-size: 15px;
+    line-height: 1.6;
 }
 
 .policy-content h4 {
@@ -1003,6 +1117,34 @@ body {
     
     .policy-content {
         max-width: none;
-        max-height: calc(100vh - 40px);
+        max-height: none;
+    }
+    
+    .policy-content h2 {
+        font-size: 20px;
+        margin: 24px 0 12px 0;
+    }
+    
+    .policy-content h3 {
+        font-size: 18px;
+        margin: 20px 0 10px 0;
+    }
+    
+    .policy-content p,
+    .policy-content li {
+        font-size: 14px;
+    }
+    
+    .page-header h1 {
+        font-size: 28px;
+    }
+    
+    .policy-summary-box {
+        padding: 16px;
+        margin: 24px 0;
+    }
+    
+    .policy-summary-box h3 {
+        font-size: 16px;
     }
 }
