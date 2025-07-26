@@ -218,6 +218,10 @@ body {
     margin-bottom: 16px;
 }
 
+.country-selector {
+    margin-bottom: 16px;
+}
+
 .custom-dropdown {
     position: relative;
     width: 100%;

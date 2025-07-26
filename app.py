@@ -79,7 +79,7 @@ class IMEIDatabase:
 class ExternalProviders:
     @staticmethod
     def check_telstra_3g(tac):
-        """Check Telstra 3G compatibility."""
+        """Check Telstra 3G compatibility (Australia)."""
         try:
             url = "https://www.telstrawholesale.com.au/bin/tw/TAC"
             data = {'tacnumber': tac}
@@ -103,6 +103,7 @@ class ExternalProviders:
             
             return {
                 'provider': 'Telstra',
+                'country': 'Australia',
                 'status': status,
                 'market_name': result.get('MarketName', 'Unknown'),
                 'success': True
@@ -111,6 +112,7 @@ class ExternalProviders:
             logger.error(f"Telstra API error: {e}")
             return {
                 'provider': 'Telstra',
+                'country': 'Australia',
                 'status': 'Error',
                 'market_name': 'Unable to check',
                 'success': False,
@@ -119,7 +121,7 @@ class ExternalProviders:
     
     @staticmethod
     def check_amta_imei(imei):
-        """Check AMTA IMEI compatibility (requires full IMEI)."""
+        """Check AMTA IMEI compatibility (Australia - requires full IMEI)."""
         try:
             url = "https://amta.org.au/wp-admin/admin-ajax.php"
             headers = {
@@ -162,6 +164,7 @@ class ExternalProviders:
                 
                 return {
                     'provider': 'AMTA',
+                    'country': 'Australia',
                     'status': status,
                     'device_name': device_name,
                     'result_html': html_result,
@@ -170,6 +173,7 @@ class ExternalProviders:
             else:
                 return {
                     'provider': 'AMTA',
+                    'country': 'Australia',
                     'status': 'Error',
                     'device_name': 'Unknown',
                     'result_html': 'Unable to check',
@@ -180,12 +184,134 @@ class ExternalProviders:
             logger.error(f"AMTA API error: {e}")
             return {
                 'provider': 'AMTA',
+                'country': 'Australia',
                 'status': 'Error',
                 'device_name': 'Unknown',
                 'result_html': 'Unable to check',
                 'success': False,
                 'error': str(e)
             }
+
+    @staticmethod
+    def check_att_imei(imei):
+        """Check AT&T IMEI compatibility (USA - requires full IMEI)."""
+        try:
+            url = "https://www.att.com/msapi/sales/websalesdeviceorchms/v1/devices/validateimei"
+            headers = {
+                'accept': '*/*',
+                'accept-language': 'en-AU,en-GB;q=0.9,en;q=0.8,en-US;q=0.7,fr-CH;q=0.6,fr-FR;q=0.5,fr;q=0.4',
+                'cache-control': 'no-cache',
+                'content-type': 'application/json',
+                'dnt': '1',
+                'origin': 'https://www.att.com',
+                'pragma': 'no-cache',
+                'priority': 'u=1, i',
+                'referer': 'https://www.att.com/buy/prepaid-byod/',
+                'sec-ch-ua': '"Chromium";v="134", "Not:A-Brand";v="24", "Google Chrome";v="134"',
+                'sec-ch-ua-mobile': '?0',
+                'sec-ch-ua-platform': '"Windows"',
+                'sec-fetch-dest': 'empty',
+                'sec-fetch-mode': 'cors',
+                'sec-fetch-site': 'same-origin',
+                'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36'
+            }
+            
+            cookies = {
+                'AKA_A2': 'A',
+                'at_check': 'true'
+            }
+            
+            data = {
+                "imei": imei,
+                "paymentType": "prepaid",
+                "stack": "UNIFIED",
+                "cartExists": False,
+                "mode": "byod"
+            }
+            
+            response = requests.post(url, headers=headers, cookies=cookies, json=data, timeout=15)
+            
+            if response.status_code == 400:
+                try:
+                    result = response.json()
+                    if 'error' in result and 'not compatible' in result['error'].get('message', '').lower():
+                        return {
+                            'provider': 'AT&T',
+                            'country': 'USA',
+                            'status': 'Not Compatible',
+                            'device_name': 'Unknown',
+                            'success': True
+                        }
+                    else:
+                        return {
+                            'provider': 'AT&T',
+                            'country': 'USA',
+                            'status': 'Error',
+                            'device_name': 'Unknown',
+                            'success': False,
+                            'error': result.get('error', {}).get('message', 'Unknown error')
+                        }
+                except:
+                    return {
+                        'provider': 'AT&T',
+                        'country': 'USA',
+                        'status': 'Error',
+                        'device_name': 'Unknown',
+                        'success': False,
+                        'error': f'Bad Request (400) - {response.text[:200]}'
+                    }
+            
+            if response.status_code != 200:
+                response.raise_for_status()
+                
+            result = response.json()
+            
+            if 'content' in result and 'deviceDetails' in result['content']:
+                device_details = result['content']['deviceDetails']
+                device_name = device_details.get('deviceFriendlyName', 'Unknown')
+                if not device_name or device_name == 'Unknown':
+                    make = device_details.get('make', '')
+                    model = device_details.get('model', '')
+                    if make and model:
+                        device_name = f"{make} {model}".strip()
+                
+                return {
+                    'provider': 'AT&T',
+                    'country': 'USA',
+                    'status': 'Compatible',
+                    'device_name': device_name,
+                    'success': True
+                }
+            
+            else:
+                return {
+                    'provider': 'AT&T',
+                    'country': 'USA',
+                    'status': 'Unknown',
+                    'device_name': 'Unknown',
+                    'success': False,
+                    'error': 'Unexpected response format'
+                }
+                
+        except Exception as e:
+            logger.error(f"AT&T API error: {e}")
+            return {
+                'provider': 'AT&T',
+                'country': 'USA',
+                'status': 'Error',
+                'device_name': 'Unknown',
+                'success': False,
+                'error': str(e)
+            }
+
+    @staticmethod
+    def get_providers_for_country(country):
+        """Get available providers for a specific country."""
+        providers = {
+            'australia': ['telstra', 'amta'],
+            'usa': ['att'],
+        }
+        return providers.get(country.lower(), [])
 
 eyemei_db = IMEIDatabase(EYEMEI_JSON_PATH)
 osmocom_db = IMEIDatabase(OSMOCOM_JSON_PATH)
@@ -218,6 +344,7 @@ def lookup_imei():
     data = request.get_json()
     imei = data.get('imei', '').strip()
     database_type = data.get('database_type', 'isthisphoneblocked')
+    country = data.get('country', 'australia').lower()
     
     if not imei:
         return jsonify({'error': 'IMEI is required'}), 400
@@ -245,23 +372,73 @@ def lookup_imei():
         'secondary_device_info': secondary_device_info,
         'secondary_db_name': secondary_db_name,
         'database_type': database_type,
+        'country': country,
         'provider_checks': []
     }
     
-    telstra_result = ExternalProviders.check_telstra_3g(tac)
-    results['provider_checks'].append(telstra_result)
+    available_providers = ExternalProviders.get_providers_for_country(country)
     
-    amta_result = ExternalProviders.check_amta_imei(imei)
-    results['provider_checks'].append(amta_result)
+    if 'telstra' in available_providers:
+        telstra_result = ExternalProviders.check_telstra_3g(tac)
+        results['provider_checks'].append(telstra_result)
+    
+    if 'amta' in available_providers:
+        amta_result = ExternalProviders.check_amta_imei(imei)
+        results['provider_checks'].append(amta_result)
+    
+    if 'att' in available_providers:
+        att_result = ExternalProviders.check_att_imei(imei)
+        results['provider_checks'].append(att_result)
+    
+    if not available_providers:
+        results['provider_checks'].append({
+            'provider': 'No Providers Available',
+            'country': country.title(),
+            'status': 'No providers available for this country yet',
+            'success': False,
+            'error': f'No external providers are currently supported for {country.title()}'
+        })
     
     return jsonify(results)
+
+@app.route('/api/countries')
+def get_countries():
+    """Return available countries and their providers."""
+    return jsonify({
+        'countries': [
+            {
+                'code': 'australia',
+                'name': 'Australia',
+                'providers': ['Telstra', 'AMTA'],
+                'description': '2 providers available'
+            },
+            {
+                'code': 'usa',
+                'name': 'United States',
+                'providers': ['AT&T'],
+                'description': '1 provider available'
+            },
+            {
+                'code': 'uk',
+                'name': 'United Kingdom',
+                'providers': [],
+                'description': 'Coming soon'
+            },
+            {
+                'code': 'canada',
+                'name': 'Canada',
+                'providers': [],
+                'description': 'Coming soon'
+            }
+        ]
+    })
 
 @app.route('/api/privacy-info')
 def privacy_info():
     """Return privacy information."""
     return jsonify({
         'tac_only_providers': ['Telstra'],
-        'full_imei_providers': ['AMTA'],
+        'full_imei_providers': ['AMTA', 'AT&T'],
         'data_storage': 'eyeMEI only stores TACs to improve its database. No full IMEIs or personal data are stored.',
         'explanation': {
             'tac': 'TAC (Type Allocation Code) is the first 8 digits of an IMEI and identifies the device model, not your specific device.',

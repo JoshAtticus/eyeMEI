@@ -10,16 +10,26 @@ class eyeMEI {
         this.loadingSection = document.getElementById('loading-section');
         this.resultsSection = document.getElementById('results-section');
         this.errorModal = document.getElementById('error-modal');
+        
+        // Database dropdown
         this.dropdownSelected = document.getElementById('dropdown-selected');
         this.dropdownOptions = document.getElementById('dropdown-options');
         this.currentDatabaseValue = 'isthisphoneblocked';
+        
+        // Country dropdown
+        this.countryDropdownSelected = document.getElementById('country-dropdown-selected');
+        this.countryDropdownOptions = document.getElementById('country-dropdown-options');
+        this.currentCountryValue = 'australia';
+        
         this.consentModal = document.getElementById('consent-modal');
         this.privacyModal = document.getElementById('privacy-modal');
         this.termsModal = document.getElementById('terms-modal');
         this.bindEvents();
         this.formatIMEIInput();
         this.initCustomDropdown();
+        this.initCountryDropdown();
         this.loadDatabaseStats();
+        this.loadCountries();
         this.checkConsent();
         console.log('Welcome to eyeMEI, an eye for IMEI. Created with <3 by JoshAtticus')
         console.log('Report issues, contribute or see the source code on GitHub: https://github.com/JoshAtticus/eyeMEI')
@@ -110,6 +120,7 @@ class eyeMEI {
 
         try {
             const databaseType = this.currentDatabaseValue;
+            const country = this.currentCountryValue;
             const response = await fetch('/api/lookup', {
                 method: 'POST',
                 headers: {
@@ -117,7 +128,8 @@ class eyeMEI {
                 },
                 body: JSON.stringify({ 
                     imei: imei,
-                    database_type: databaseType
+                    database_type: databaseType,
+                    country: country
                 })
             });
 
@@ -251,11 +263,12 @@ class eyeMEI {
         providerResults.innerHTML = providerChecks.map(result => {
             const statusClass = this.getStatusClass(result);
             const statusText = this.getStatusText(result);
+            const countryText = result.country ? ` (${result.country})` : '';
             
             return `
                 <div class="provider-result ${statusClass}">
                     <div class="provider-header">
-                        <span class="provider-name">${this.escapeHtml(result.provider)}</span>
+                        <span class="provider-name">${this.escapeHtml(result.provider)}${countryText}</span>
                         <span class="provider-status ${this.getStatusBadgeClass(result)}">${statusText}</span>
                     </div>
                     <div class="provider-details">
@@ -365,6 +378,23 @@ class eyeMEI {
         }
     }
 
+    async loadCountries() {
+        try {
+            const response = await fetch('/api/countries');
+            if (response.ok) {
+                const data = await response.json();
+                this.updateCountryDropdownWithData(data.countries);
+            }
+        } catch (error) {
+            console.log('Could not load countries:', error);
+        }
+    }
+
+    updateCountryDropdownWithData(countries) {
+        // The HTML is already set up with default countries, so we just need to update if needed
+        // This method is here for future dynamic country loading if required
+    }
+
     initCustomDropdown() {
         this.dropdownSelected.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -387,6 +417,29 @@ class eyeMEI {
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 this.closeDropdown();
+                this.closeCountryDropdown();
+            }
+        });
+    }
+
+    initCountryDropdown() {
+        if (!this.countryDropdownSelected || !this.countryDropdownOptions) return;
+
+        this.countryDropdownSelected.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleCountryDropdown();
+        });
+
+        this.countryDropdownOptions.addEventListener('click', (e) => {
+            const option = e.target.closest('.dropdown-option');
+            if (option) {
+                this.selectCountryOption(option);
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.country-selector .custom-dropdown')) {
+                this.closeCountryDropdown();
             }
         });
     }
@@ -427,6 +480,46 @@ class eyeMEI {
 
         this.loadDatabaseStats();
 
+        if (!this.resultsSection.classList.contains('hidden')) {
+            this.performLookup();
+        }
+    }
+
+    toggleCountryDropdown() {
+        const isOpen = this.countryDropdownOptions.classList.contains('open');
+        if (isOpen) {
+            this.closeCountryDropdown();
+        } else {
+            this.openCountryDropdown();
+        }
+    }
+
+    openCountryDropdown() {
+        this.countryDropdownSelected.classList.add('open');
+        this.countryDropdownOptions.classList.add('open');
+    }
+
+    closeCountryDropdown() {
+        this.countryDropdownSelected.classList.remove('open');
+        this.countryDropdownOptions.classList.remove('open');
+    }
+
+    selectCountryOption(optionElement) {
+        this.countryDropdownOptions.querySelectorAll('.dropdown-option').forEach(opt => {
+            opt.classList.remove('active');
+        });
+
+        optionElement.classList.add('active');
+
+        const optionContent = optionElement.querySelector('.option-content').cloneNode(true);
+        const currentContent = this.countryDropdownSelected.querySelector('.option-content');
+        currentContent.replaceWith(optionContent);
+
+        this.currentCountryValue = optionElement.dataset.value;
+
+        this.closeCountryDropdown();
+
+        // Re-run lookup if results are currently showing
         if (!this.resultsSection.classList.contains('hidden')) {
             this.performLookup();
         }
