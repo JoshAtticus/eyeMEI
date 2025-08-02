@@ -9,7 +9,56 @@ import os
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 app = Flask(__name__)
-CORS(app)
+
+def is_running_under_gunicorn():
+    """Check if the application is running under gunicorn."""
+    return (
+        "gunicorn" in os.environ.get("SERVER_SOFTWARE", "") or
+        "gunicorn" in str(os.environ.get("WSGI_SERVER", "")) or
+        os.environ.get("GUNICORN_PID") is not None or
+        "gunicorn" in str(globals().get("__name__", ""))
+    )
+
+if is_running_under_gunicorn():
+    def check_origin(origin):
+        """Check if origin is allowed for production."""
+        if not origin:
+            return False
+        
+        allowed_patterns = [
+            ".eyemei.cc",
+            ".joshattic.us"
+        ]
+        
+        for pattern in allowed_patterns:
+            if origin.startswith("https://") and origin.endswith(pattern):
+                return True
+            if origin == f"https://{pattern[1:]}":
+                return True
+        
+        return False
+    
+    CORS(app, origins=check_origin, supports_credentials=True)
+    logger.info("Production mode: CORS configured for eyemei.cc and joshattic.us domains")
+else:
+    def check_origin(origin):
+        """Check if origin is allowed for development."""
+        if not origin:
+            return False
+        
+        if origin.startswith("http://localhost:") or \
+           origin.startswith("http://127.0.0.1:") or \
+           origin.startswith("http://0.0.0.0:") or \
+           origin == "http://localhost" or \
+           origin == "http://127.0.0.1" or \
+           origin == "http://0.0.0.0":
+            return True
+        
+        return False
+    
+    CORS(app, origins=check_origin, supports_credentials=True)
+    logger.info("Development mode: CORS configured for localhost only")
+    
 EYEMEI_JSON_PATH = 'databases/eyemei.json'
 OSMOCOM_JSON_PATH = 'databases/osmocom.json'
 ISTHISPHONEBLOCKED_JSON_PATH = 'databases/isthisphoneblocked.json'
@@ -275,11 +324,35 @@ class ExternalProviders:
                     if make and model:
                         device_name = f"{make} {model}".strip()
                 
+                sim_details = result['content'].get('simDetails', [])
+                sim_support = []
+                for sim in sim_details:
+                    sim_type = sim.get('simType', '')
+                    if sim_type == 'psim':
+                        sim_support.append('Physical SIM')
+                    elif sim_type == 'esimcard':
+                        sim_support.append('eSIM')
+                    elif sim_type:
+                        sim_support.append(sim_type.upper())
+                
+                sim_support_text = ' + '.join(sim_support) if sim_support else 'Unknown'
+                
+                device_category = device_details.get('deviceCategoryType', 'Unknown')
+                make = device_details.get('make', 'Unknown')
+                model = device_details.get('model', 'Unknown')
+                imei_type = device_details.get('imeiType', 'Unknown')
+                
                 return {
                     'provider': 'AT&T',
                     'country': 'USA',
                     'status': 'Compatible',
                     'device_name': device_name,
+                    'device_category': device_category,
+                    'make': make,
+                    'model': model,
+                    'imei_type': imei_type,
+                    'sim_support': sim_support_text,
+                    'sim_details': sim_support,
                     'success': True
                 }
             
@@ -400,82 +473,6 @@ def lookup_imei():
         })
     
     return jsonify(results)
-
-@app.route('/api/countries')
-def get_countries():
-    """Return available countries and their providers."""
-    return jsonify({
-        'countries': [
-            {
-                'code': 'australia',
-                'name': 'Australia',
-                'providers': ['Telstra', 'AMTA'],
-                'description': '2 providers available'
-            },
-            {
-                'code': 'usa',
-                'name': 'United States',
-                'providers': ['AT&T'],
-                'description': '1 provider available'
-            },
-            {
-                'code': 'uk',
-                'name': 'United Kingdom',
-                'providers': [],
-                'description': 'Coming soon'
-            },
-            {
-                'code': 'canada',
-                'name': 'Canada',
-                'providers': [],
-                'description': 'Coming soon'
-            }
-        ]
-    })
-
-@app.route('/api/privacy-info')
-def privacy_info():
-    """Return privacy information."""
-    return jsonify({
-        'tac_only_providers': ['Telstra'],
-        'full_imei_providers': ['AMTA', 'AT&T'],
-        'data_storage': 'eyeMEI only stores TACs to improve its database. No full IMEIs or personal data are stored.',
-        'explanation': {
-            'tac': 'TAC (Type Allocation Code) is the first 8 digits of an IMEI and identifies the device model, not your specific device.',
-            'full_imei': 'Full IMEI is required by some providers for exact device matching and compatibility checks.'
-        }
-    })
-
-@app.route('/api/database-stats')
-def database_stats():
-    """Return database statistics."""
-    def get_db_stats(db):
-        brands_data = db.data.get('brands', {})
-        total_brands = len(brands_data)
-        total_models = 0
-        total_tacs = 0
-        
-        for brand_name, brand_info in brands_data.items():
-            models = brand_info.get('models', [])
-            total_models += len(models)
-            for model_dict in models:
-                for model_name, model_info in model_dict.items():
-                    tacs = model_info.get('tacs', [])
-                    total_tacs += len(tacs)
-        
-        return {
-            'brands': total_brands,
-            'models': total_models,
-            'tacs': total_tacs
-        }
-    
-    return jsonify({
-        'eyemei': get_db_stats(eyemei_db),
-        'isthisphoneblocked': get_db_stats(isthisphoneblocked_db),
-        'osmocom': get_db_stats(osmocom_db),
-        'randommer': get_db_stats(randommer_db),
-        'last_updated': datetime.now().strftime('%d %B %Y')
-    })
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

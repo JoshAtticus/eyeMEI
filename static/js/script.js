@@ -10,17 +10,12 @@ class eyeMEI {
         this.loadingSection = document.getElementById('loading-section');
         this.resultsSection = document.getElementById('results-section');
         this.errorModal = document.getElementById('error-modal');
-        
-        // Database dropdown
         this.dropdownSelected = document.getElementById('dropdown-selected');
         this.dropdownOptions = document.getElementById('dropdown-options');
         this.currentDatabaseValue = 'isthisphoneblocked';
-        
-        // Country dropdown
         this.countryDropdownSelected = document.getElementById('country-dropdown-selected');
         this.countryDropdownOptions = document.getElementById('country-dropdown-options');
         this.currentCountryValue = 'australia';
-        
         this.consentModal = document.getElementById('consent-modal');
         this.privacyModal = document.getElementById('privacy-modal');
         this.termsModal = document.getElementById('terms-modal');
@@ -28,11 +23,10 @@ class eyeMEI {
         this.formatIMEIInput();
         this.initCustomDropdown();
         this.initCountryDropdown();
-        this.loadDatabaseStats();
-        this.loadCountries();
         this.checkConsent();
         console.log('Welcome to eyeMEI, an eye for IMEI. Created with <3 by JoshAtticus')
         console.log('Report issues, contribute or see the source code on GitHub: https://github.com/JoshAtticus/eyeMEI')
+        console.log('Please use the API to integrate eyeMEI into your own projects, don\'t scrape the site directly, it\'s free!')
     }
 
     bindEvents() {
@@ -309,30 +303,69 @@ class eyeMEI {
             return `<small>Unable to check: ${this.escapeHtml(result.error || 'Service unavailable')}</small>`;
         }
 
-        let details = [];
-        
-        if (result.market_name && result.market_name !== 'Unknown') {
-            details.push(`Device: ${this.escapeHtml(result.market_name)}`);
-        }
-        
-        if (result.device_name && result.device_name !== 'Unknown') {
-            details.push(`Device: ${this.escapeHtml(result.device_name)}`);
-        }
-        
-        if (result.result_html) {
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = result.result_html;
-            const text = tempDiv.textContent || tempDiv.innerText || '';
-            if (text.trim()) {
-                details.push(text.trim());
+        if (result.provider === 'AT&T' && result.success) {
+            let details = [];
+            if (result.device_name && result.device_name !== 'Unknown') {
+                details.push(`<div class="provider-detail-main">${this.escapeHtml(result.device_name)}</div>`);
             }
+            let subDetails = [];
+            
+            if (result.device_category && result.device_category !== 'Unknown') {
+                subDetails.push(`<span class="provider-detail-item"><i class="fas fa-mobile-alt"></i> ${this.escapeHtml(result.device_category)}</span>`);
+            }
+            
+            if (result.sim_support && result.sim_support !== 'Unknown') {
+                subDetails.push(`<span class="provider-detail-item"><i class="fas fa-sim-card"></i> ${this.escapeHtml(result.sim_support)}</span>`);
+            }
+            
+            if (result.imei_type && result.imei_type !== 'Unknown') {
+                subDetails.push(`<span class="provider-detail-item"><i class="fas fa-barcode"></i> IMEI Type: ${this.escapeHtml(result.imei_type)}</span>`);
+            }
+            
+            let techDetails = [];
+            if (result.make && result.make !== 'Unknown') {
+                techDetails.push(`Make: ${this.escapeHtml(result.make)}`);
+            }
+            if (result.model && result.model !== 'Unknown') {
+                techDetails.push(`Model: ${this.escapeHtml(result.model)}`);
+            }
+            
+            if (subDetails.length > 0) {
+                details.push(`<div class="provider-detail-sub">${subDetails.join('')}</div>`);
+            }
+            
+            if (techDetails.length > 0) {
+                details.push(`<div class="provider-detail-tech"><small>${techDetails.join(' • ')}</small></div>`);
+            }
+            
+            return details.join('');
         }
-        
-        if (details.length === 0) {
-            details.push('Check completed successfully');
+        else {
+            let details = [];
+            
+            if (result.market_name && result.market_name !== 'Unknown') {
+                details.push(`Device: ${this.escapeHtml(result.market_name)}`);
+            }
+            
+            if (result.device_name && result.device_name !== 'Unknown') {
+                details.push(`Device: ${this.escapeHtml(result.device_name)}`);
+            }
+            
+            if (result.result_html) {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = result.result_html;
+                const text = tempDiv.textContent || tempDiv.innerText || '';
+                if (text.trim()) {
+                    details.push(text.trim());
+                }
+            }
+            
+            if (details.length === 0) {
+                details.push('Check completed successfully');
+            }
+            
+            return `<small>${details.join(' • ')}</small>`;
         }
-        
-        return `<small>${details.join(' • ')}</small>`;
     }
 
     resetForm() {
@@ -349,50 +382,6 @@ class eyeMEI {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
-    }
-
-    async loadDatabaseStats() {
-        try {
-            const response = await fetch('/api/database-stats');
-            if (response.ok) {
-                const stats = await response.json();
-                this.updateDropdownWithStats(stats);
-            }
-        } catch (error) {
-            console.log('Could not load database stats:', error);
-        }
-    }
-
-    updateDropdownWithStats(stats) {
-        const options = this.dropdownOptions.querySelectorAll('.dropdown-option');
-        options.forEach(option => {
-            const value = option.dataset.value;
-            const subElement = option.querySelector('.option-sub');
-        });
-        
-        const selectedOption = this.dropdownOptions.querySelector('.dropdown-option.active');
-        if (selectedOption) {
-            const optionContent = selectedOption.querySelector('.option-content').cloneNode(true);
-            const currentContent = this.dropdownSelected.querySelector('.option-content');
-            currentContent.replaceWith(optionContent);
-        }
-    }
-
-    async loadCountries() {
-        try {
-            const response = await fetch('/api/countries');
-            if (response.ok) {
-                const data = await response.json();
-                this.updateCountryDropdownWithData(data.countries);
-            }
-        } catch (error) {
-            console.log('Could not load countries:', error);
-        }
-    }
-
-    updateCountryDropdownWithData(countries) {
-        // The HTML is already set up with default countries, so we just need to update if needed
-        // This method is here for future dynamic country loading if required
     }
 
     initCustomDropdown() {
@@ -519,7 +508,6 @@ class eyeMEI {
 
         this.closeCountryDropdown();
 
-        // Re-run lookup if results are currently showing
         if (!this.resultsSection.classList.contains('hidden')) {
             this.performLookup();
         }

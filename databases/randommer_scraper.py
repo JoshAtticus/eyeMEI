@@ -20,6 +20,20 @@ from collections import defaultdict
 import threading
 from concurrent.futures import ThreadPoolExecutor
 import queue
+try:
+    from colorama import init, Fore, Style, Cursor
+    init(autoreset=True)  # Initialize colorama for Windows
+    COLORS_AVAILABLE = True
+except ImportError:
+    print("Warning: colorama not installed. Install with 'pip install colorama' for colored output.")
+    COLORS_AVAILABLE = False
+    # Fallback empty strings if colorama not available
+    class Fore:
+        GREEN = RED = YELLOW = CYAN = MAGENTA = ""
+    class Style:
+        RESET_ALL = ""
+    class Cursor:
+        UP = DOWN = ""
 
 
 class RandommerScraper:
@@ -53,7 +67,7 @@ class RandommerScraper:
         self.cookies = {
             "ezosuibasgeneris-1": "d7bb0c83-79e5-4789-4efc-f65d83421ec2",
             "_ez_retention_enabled": "false",
-            "cf_clearance": "scBx7RzNnxBvnX3Rum3PmXyW65qCv3bVY7Pwc5WTHcE-1753364664-1.2.1.1-f8MPySfO7pfz1VLXSHMIKAY9SEGcGv5YGJbwXY4zO7WdNShw6ZbqTfnMpTM_dqEibfENIHayP8LLtLAfeks5f_PnAhZgIxi74t.U01GoFuNXn1LX2rdBZDIkrNzY1GfCG0gqlsA.DmNbJe7.a5PQLribZ7ZNUaIeQfop2Mndk14J7jr153O9nW3W2KxI7YbnBMH5Z6BQrWzqvIV2pa.h23l.y8E6LwSRGidoWvR3Fqs",
+            "cf_clearance": "2O77OyElNhROiMzaHhw5sltzul0tybT5Rz10tw.BwKE-1754113504-1.2.1.1-3VJJJWxFeoSPNL4PN67ckbkakPuuDSN6rEIuhAuLSEW6yWv2jNO9iAUHXUcCzRWDzKbVOpvAHwZeoJ1vJSxOERyZIvi2AXIez6rIx2INvcul5omHYnTy6hAIu9LFi9VYymiQd4XoMyo_Vt5GHx8YFG.DQnqD2G5Viz0y.QqrWMtWWzl6p_7ZB71VXU1SasgTSBGA2tfQg8eXGZniX0TxSP0LWvefr23bIxMwX_Lq97g",
             "ezoictest": "stable",
             "ezopvc_232529": "1",
             "ezoab_232529": "mod255",
@@ -67,6 +81,9 @@ class RandommerScraper:
         self.database = {"brands": {}}
         self.database_lock = threading.Lock()
         self.save_queue = queue.Queue()
+        self.status_line_shown = False
+        self.current_request_count = 0
+        self.current_new_additions = 0
         self.load_existing_database()
         
     def load_existing_database(self):
@@ -98,12 +115,16 @@ class RandommerScraper:
             
             if response.status_code == 200:
                 return response.json()
+            elif response.status_code == 403:
+                print(f"{Fore.RED}❌ Error 403: Access forbidden. You need to get a new cf_clearance cookie from your browser!{Style.RESET_ALL}")
+                print(f"{Fore.YELLOW}💡 Go to https://randommer.io/imei-generator, make a request, and copy the new cf_clearance cookie from browser dev tools{Style.RESET_ALL}")
+                return None
             else:
-                print(f"Request failed with status code: {response.status_code}")
+                print(f"{Fore.RED}❌ Request failed with status code: {response.status_code}{Style.RESET_ALL}")
                 return None
                 
         except requests.exceptions.RequestException as e:
-            print(f"Request error: {e}")
+            print(f"{Fore.RED}❌ Request error: {e}{Style.RESET_ALL}")
             return None
     
     def extract_tac(self, imei):
@@ -144,17 +165,18 @@ class RandommerScraper:
         
         normalized_brand = self.normalize_brand(brand)
         if not normalized_brand:
-            print(f"Skipping invalid brand: '{brand}'")
+            self.log_message(f"{Fore.RED}❌ Skipping invalid brand: '{brand}'{Style.RESET_ALL}")
             return False
             
         cleaned_model = self.clean_model_name(model, normalized_brand)
         if not cleaned_model:
-            print(f"Skipping invalid model: '{model}' for brand '{normalized_brand}'")
+            self.log_message(f"{Fore.RED}❌ Skipping invalid model: '{model}' for brand '{normalized_brand}'{Style.RESET_ALL}")
             return False
         
         with self.database_lock:
             if normalized_brand not in self.database["brands"]:
                 self.database["brands"][normalized_brand] = {"models": []}
+                self.log_message(f"{Fore.CYAN}🆕 New brand added: {normalized_brand}{Style.RESET_ALL}")
             
             model_found = False
             tac_added = False
@@ -163,10 +185,10 @@ class RandommerScraper:
                     if model_name == cleaned_model:
                         if tac not in model_data["tacs"]:
                             model_data["tacs"].append(tac)
-                            print(f"Added TAC {tac} to existing model: {normalized_brand} {cleaned_model}")
+                            self.log_message(f"{Fore.GREEN}✅ Added TAC {tac} to existing model: {normalized_brand} {cleaned_model}{Style.RESET_ALL}")
                             tac_added = True
                         else:
-                            print(f"TAC {tac} already exists for model: {normalized_brand} {cleaned_model}")
+                            self.log_message(f"{Fore.YELLOW}🔄 TAC {tac} already exists for model: {normalized_brand} {cleaned_model}{Style.RESET_ALL}")
                         model_found = True
                         break
                 if model_found:
@@ -179,7 +201,7 @@ class RandommerScraper:
                     }
                 }
                 self.database["brands"][normalized_brand]["models"].append(new_model)
-                print(f"Added new model: {normalized_brand} {cleaned_model} with TAC {tac}")
+                self.log_message(f"{Fore.CYAN}🆕 New device added: {normalized_brand} {cleaned_model} with TAC {tac}{Style.RESET_ALL}")
                 tac_added = True
             
             return tac_added
@@ -190,9 +212,9 @@ class RandommerScraper:
             with self.database_lock:
                 with open(self.database_path, 'w', encoding='utf-8') as f:
                     json.dump(self.database, f, indent=4, ensure_ascii=False)
-                print(f"Database saved to {self.database_path}")
+                self.log_message(f"💾 Database saved to {self.database_path}")
         except Exception as e:
-            print(f"Error saving database: {e}")
+            self.log_message(f"{Fore.RED}❌ Error saving database: {e}{Style.RESET_ALL}")
     
     def process_request(self):
         """Process a single request - used for threading"""
@@ -218,6 +240,35 @@ class RandommerScraper:
         
         return total_brands, total_models, total_tacs
     
+    def update_status_line(self, request_count, new_additions):
+        """Update the persistent status line at the bottom"""
+        self.current_request_count = request_count
+        self.current_new_additions = new_additions
+        brands, models, tacs = self.get_stats()
+        status = f"{Fore.MAGENTA}📊 Live Stats: {Fore.CYAN}Requests: {request_count} | {Fore.GREEN}New: {new_additions} | {Fore.CYAN}Brands: {brands} | Models: {models} | TACs: {tacs}{Style.RESET_ALL}"
+        
+        if self.status_line_shown:
+            # Move cursor up and clear the line, then print status
+            print(f"\033[1A\033[2K{status}")
+        else:
+            print(status)
+            self.status_line_shown = True
+    
+    def log_message(self, message):
+        """Print a log message above the status line"""
+        if self.status_line_shown:
+            # Move cursor up, clear line, print message
+            print(f"\033[1A\033[2K{message}")
+            # Re-print the status line with current stats
+            brands, models, tacs = self.get_stats()
+            status = f"{Fore.MAGENTA}📊 Live Stats: {Fore.CYAN}Requests: {self.current_request_count} | {Fore.GREEN}New: {self.current_new_additions} | {Fore.CYAN}Brands: {brands} | Models: {models} | TACs: {tacs}{Style.RESET_ALL}"
+            print(status)
+        else:
+            print(message)
+            # If this is the first message and no status line yet, show status line after
+            if not self.status_line_shown:
+                self.update_status_line(self.current_request_count, self.current_new_additions)
+    
     def run(self):
         """Main scraping loop with multithreading"""
         print("Starting IMEI scraper with multithreading...")
@@ -229,6 +280,9 @@ class RandommerScraper:
         save_interval = 25
         max_workers = 3
         new_additions = 0
+        
+        # Initialize status line
+        self.update_status_line(request_count, new_additions)
         
         try:
             with ThreadPoolExecutor(max_workers=max_workers) as executor:
@@ -242,34 +296,37 @@ class RandommerScraper:
                                 brand, model, imei = result
                                 request_count += 1
                                 
-                                print(f"Request {request_count}: {brand} - {model} (IMEI: {imei})")
+                                # Don't print regular request info, just log important events
                                 
                                 was_new = self.add_to_database(brand, model, imei)
                                 if was_new:
                                     new_additions += 1
                                 
+                                # Update status line with current stats
+                                self.update_status_line(request_count, new_additions)
+                                
+                                # Auto-save periodically
                                 if new_additions > 0 and new_additions % save_interval == 0:
                                     self.save_database()
-                                    brands, models, tacs = self.get_stats()
-                                    print(f"Stats: {brands} brands, {models} models, {tacs} TACs ({new_additions} new additions)")
-                                    print("-" * 50)
                             else:
-                                print("Failed to get data from one request...")
+                                self.log_message(f"{Fore.RED}❌ Failed to get data from one request...{Style.RESET_ALL}")
+                                self.update_status_line(request_count, new_additions)
                                 
                         except Exception as e:
-                            print(f"Request failed: {e}")
+                            self.log_message(f"{Fore.RED}❌ Request failed: {e}{Style.RESET_ALL}")
+                            self.update_status_line(request_count, new_additions)
                 
         except KeyboardInterrupt:
-            print("\nStopping scraper...")
+            print(f"\n{Fore.YELLOW}⏹️  Stopping scraper...{Style.RESET_ALL}")
             self.save_database()
             brands, models, tacs = self.get_stats()
-            print(f"\nFinal stats:")
-            print(f"Total requests made: {request_count}")
-            print(f"New additions: {new_additions}")
-            print(f"Brands: {brands}")
-            print(f"Models: {models}")
-            print(f"TACs: {tacs}")
-            print(f"Database saved to: {self.database_path}")
+            print(f"\n{Fore.MAGENTA}📈 Final stats:{Style.RESET_ALL}")
+            print(f"{Fore.CYAN}Total requests made: {request_count}{Style.RESET_ALL}")
+            print(f"{Fore.GREEN}New additions: {new_additions}{Style.RESET_ALL}")
+            print(f"{Fore.CYAN}Brands: {brands}{Style.RESET_ALL}")
+            print(f"{Fore.CYAN}Models: {models}{Style.RESET_ALL}")
+            print(f"{Fore.CYAN}TACs: {tacs}{Style.RESET_ALL}")
+            print(f"{Fore.GREEN}Database saved to: {self.database_path}{Style.RESET_ALL}")
 
 if __name__ == "__main__":
     scraper = RandommerScraper()
