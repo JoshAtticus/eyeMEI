@@ -52,6 +52,7 @@ EYEMEI_JSON_PATH = 'databases/eyemei.json'
 OSMOCOM_JSON_PATH = 'databases/osmocom.json'
 ISTHISPHONEBLOCKED_JSON_PATH = 'databases/isthisphoneblocked.json'
 RANDOMMER_JSON_PATH = 'databases/randommer.json'
+LOOKUP_LOG_JSON_PATH = 'databases/lookup_log.json'
 
 class IMEIDatabase:
     def __init__(self, json_path):
@@ -113,6 +114,70 @@ class IMEIDatabase:
                             'image': image
                         }
         return None
+
+class LookupLogger:
+    def __init__(self, json_path):
+        self.json_path = json_path
+        self.ensure_log_file_exists()
+    
+    def ensure_log_file_exists(self):
+        """Ensure the log file exists with proper structure."""
+        if not os.path.exists(self.json_path):
+            os.makedirs(os.path.dirname(self.json_path), exist_ok=True)
+            initial_data = {
+                "lookups": [],
+                "stats": {
+                    "total_lookups": 0,
+                    "first_lookup": None,
+                    "last_lookup": None
+                }
+            }
+            with open(self.json_path, 'w', encoding='utf-8') as f:
+                json.dump(initial_data, f, indent=2, ensure_ascii=False)
+    
+    def log_lookup(self, imei, tac, results):
+        """Log an IMEI lookup with all results."""
+        try:
+            # Read current data
+            with open(self.json_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            
+            timestamp = datetime.now().isoformat()
+            
+            # Create lookup entry
+            lookup_entry = {
+                "timestamp": timestamp,
+                "imei": imei,
+                "tac": tac,
+                "database_type": results.get('database_type'),
+                "country": results.get('country'),
+                "eyemei_device_info": results.get('eyemei_device_info'),
+                "secondary_device_info": results.get('secondary_device_info'),
+                "secondary_db_name": results.get('secondary_db_name'),
+                "provider_checks": results.get('provider_checks', [])
+            }
+            
+            # Add to lookups list
+            data["lookups"].append(lookup_entry)
+            
+            # Update stats
+            data["stats"]["total_lookups"] += 1
+            data["stats"]["last_lookup"] = timestamp
+            if data["stats"]["first_lookup"] is None:
+                data["stats"]["first_lookup"] = timestamp
+            
+            # Keep only last 10000 lookups to prevent file from getting too large
+            if len(data["lookups"]) > 10000:
+                data["lookups"] = data["lookups"][-10000:]
+            
+            # Write back to file
+            with open(self.json_path, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+            
+            logger.info(f"Logged lookup for IMEI: {imei[:4]}****{imei[-4:]} (Total lookups: {data['stats']['total_lookups']})")
+            
+        except Exception as e:
+            logger.error(f"Error logging lookup: {e}")
 
 class ExternalProviders:
     @staticmethod
@@ -379,6 +444,7 @@ eyemei_db = IMEIDatabase(EYEMEI_JSON_PATH)
 osmocom_db = IMEIDatabase(OSMOCOM_JSON_PATH)
 isthisphoneblocked_db = IMEIDatabase(ISTHISPHONEBLOCKED_JSON_PATH)
 randommer_db = IMEIDatabase(RANDOMMER_JSON_PATH)
+lookup_logger = LookupLogger(LOOKUP_LOG_JSON_PATH)
 
 @app.route('/')
 def index():
@@ -460,6 +526,9 @@ def lookup_imei():
             'success': False,
             'error': f'No external providers are currently supported for {country.title()}'
         })
+    
+    # Log the lookup
+    lookup_logger.log_lookup(imei, tac, results)
     
     return jsonify(results)
 
