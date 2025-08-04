@@ -20,43 +20,32 @@ def is_running_under_gunicorn():
     )
 
 if is_running_under_gunicorn():
-    def check_origin(origin):
-        """Check if origin is allowed for production."""
-        if not origin:
-            return False
-        
-        allowed_patterns = [
-            ".eyemei.cc",
-            ".joshattic.us"
-        ]
-        
-        for pattern in allowed_patterns:
-            if origin.startswith("https://") and origin.endswith(pattern):
-                return True
-            if origin == f"https://{pattern[1:]}":
-                return True
-        
-        return False
+    # Production CORS configuration
+    allowed_origins = [
+        "https://eyemei.cc",
+        "https://www.eyemei.cc",
+        "https://joshattic.us",
+        "https://www.joshattic.us",
+        "https://eyemei.joshattic.us"
+    ]
     
-    CORS(app, origins=check_origin, supports_credentials=True)
+    CORS(app, origins=allowed_origins, supports_credentials=True)
     logger.info("Production mode: CORS configured for eyemei.cc and joshattic.us domains")
 else:
-    def check_origin(origin):
-        """Check if origin is allowed for development."""
-        if not origin:
-            return False
-        
-        if origin.startswith("http://localhost:") or \
-           origin.startswith("http://127.0.0.1:") or \
-           origin.startswith("http://0.0.0.0:") or \
-           origin == "http://localhost" or \
-           origin == "http://127.0.0.1" or \
-           origin == "http://0.0.0.0":
-            return True
-        
-        return False
+    # Development CORS configuration
+    dev_origins = [
+        "http://localhost:3000",
+        "http://localhost:5000",
+        "http://localhost:8000",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:5000",
+        "http://127.0.0.1:8000",
+        "http://0.0.0.0:3000",
+        "http://0.0.0.0:5000",
+        "http://0.0.0.0:8000"
+    ]
     
-    CORS(app, origins=check_origin, supports_credentials=True)
+    CORS(app, origins=dev_origins, supports_credentials=True)
     logger.info("Development mode: CORS configured for localhost only")
     
 EYEMEI_JSON_PATH = 'databases/eyemei.json'
