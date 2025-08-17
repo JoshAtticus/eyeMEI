@@ -266,4 +266,4 @@ def lookup_details(tac):
 if __name__ == '__main__':
     # Create admin templates directory if it doesn't exist
     os.makedirs('admin_templates', exist_ok=True)
-    app.run(debug=True, host='127.0.0.1', port=5001)
+    app.run(debug=True, host='127.0.0.1', port=5002)
