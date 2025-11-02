@@ -48,6 +48,7 @@ Thumbs.db
 Dockerfile
 .dockerignore
 docker-compose.yml
+!start.sh
 
 # Documentation
 *.md

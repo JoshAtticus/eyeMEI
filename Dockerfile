@@ -27,17 +27,11 @@ COPY . .
 # Create necessary directories
 RUN mkdir -p databases/raw_data admin_templates public/images/devices static/css static/js templates
 
+# Make the startup script executable
+RUN chmod +x /app/start.sh
+
 # Expose ports for both main app and admin panel
 EXPOSE 5000 5001
-
-# Create a startup script
-RUN echo '#!/bin/bash\n\
-# Start the admin panel in the background\n\
-gunicorn --bind 0.0.0.0:5001 --workers 2 --timeout 120 admin_panel:app &\n\
-\n\
-# Start the main application\n\
-exec gunicorn --bind 0.0.0.0:5000 --workers 4 --timeout 120 wsgi:app\n\
-' > /app/start.sh && chmod +x /app/start.sh
 
 # Set the startup command
 CMD ["/app/start.sh"]
