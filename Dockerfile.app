@@ -28,7 +28,7 @@ COPY . .
 RUN mkdir -p databases/raw_data public/images/devices static/css static/js templates
 
 # Expose port for main app
-EXPOSE 5000
+EXPOSE 3002
 
 # Start the main application
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "--timeout", "120", "wsgi:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:3002", "--workers", "4", "--timeout", "120", "wsgi:app"]

@@ -27,7 +27,7 @@ COPY . .
 RUN mkdir -p databases admin_templates
 
 # Expose port for admin panel
-EXPOSE 5001
+EXPOSE 3003
 
 # Start the admin panel
-CMD ["gunicorn", "--bind", "0.0.0.0:5001", "--workers", "2", "--timeout", "120", "admin_panel:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:3003", "--workers", "2", "--timeout", "120", "admin_panel:app"]
