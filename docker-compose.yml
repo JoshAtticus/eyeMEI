@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  eyemei:
+    build: .
+    container_name: eyemei-app
+    ports:
+      - "5000:5000"  # Main application
+      - "5001:5001"  # Admin panel
+    volumes:
+      # Mount databases directory to persist data
+      - ./databases:/app/databases
+      # Mount public images for device photos
+      - ./public:/app/public
+    environment:
+      - PYTHONUNBUFFERED=1
+      - GUNICORN_PID=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:5000/')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
