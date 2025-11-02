@@ -14,8 +14,8 @@ This approach runs the main app and admin panel in separate containers, which is
    ```
 
 2. **Access the services:**
-   - Main Application: http://localhost:5000
-   - Admin Panel: http://localhost:5001
+   - Main Application: http://localhost:3002
+   - Admin Panel: http://localhost:3003
 
 3. **View logs:**
    ```bash
@@ -47,8 +47,8 @@ If you prefer running both services in a single container using supervisor:
    ```bash
    docker run -d \
      --name eyemei-app \
-     -p 5000:5000 \
-     -p 5001:5001 \
+     -p 3002:3002 \
+     -p 3003:3003 \
      -v ${PWD}/databases:/app/databases \
      -v ${PWD}/public:/app/public \
      eyemei:latest
@@ -71,11 +71,11 @@ If you prefer running both services in a single container using supervisor:
 
 The recommended setup uses two separate Docker containers:
 
-- **eyemei-app** (Port 5000): The primary eyeMEI lookup service
+- **eyemei-app** (Port 3002): The primary eyeMEI lookup service
   - Runs with 4 Gunicorn workers
   - Isolated environment prevents conflicts
   
-- **eyemei-admin** (Port 5001): Database management and lookup log review interface
+- **eyemei-admin** (Port 3003): Database management and lookup log review interface
   - Runs with 2 Gunicorn workers
   - Shares database volume with main app
 
@@ -145,12 +145,12 @@ docker-compose logs eyemei
 
 ### Port already in use
 
-If ports 5000 or 5001 are already in use, modify the port mappings in `docker-compose.yml`:
+If ports 3002 or 3003 are already in use, modify the port mappings in `docker-compose.yml`:
 
 ```yaml
 ports:
-  - "8000:5000"  # Main app accessible on host port 8000
-  - "8001:5001"  # Admin panel accessible on host port 8001
+  - "8000:3002"  # Main app accessible on host port 8000
+  - "8001:3003"  # Admin panel accessible on host port 8001
 ```
 
 ### Rebuild after code changes
@@ -175,11 +175,11 @@ Example nginx configuration:
 
 ```nginx
 upstream eyemei_app {
-    server localhost:5000;
+    server localhost:3002;
 }
 
 upstream eyemei_admin {
-    server localhost:5001;
+    server localhost:3003;
 }
 
 server {
