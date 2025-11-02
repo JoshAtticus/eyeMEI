@@ -6,13 +6,13 @@ WORKDIR /app
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    GUNICORN_PID=1
+    PYTHONUNBUFFERED=1
 
 # Install system dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     gcc \
+    supervisor \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements file
@@ -25,13 +25,36 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Create necessary directories
-RUN mkdir -p databases/raw_data admin_templates public/images/devices static/css static/js templates
+RUN mkdir -p databases/raw_data admin_templates public/images/devices static/css static/js templates /var/log/supervisor
 
-# Make the startup script executable
-RUN chmod +x /app/start.sh
+# Create supervisor configuration
+RUN echo '[supervisord]\n\
+nodaemon=true\n\
+user=root\n\
+logfile=/var/log/supervisor/supervisord.log\n\
+pidfile=/var/run/supervisord.pid\n\
+\n\
+[program:eyemei-app]\n\
+command=gunicorn --bind 0.0.0.0:5000 --workers 4 --timeout 120 wsgi:app\n\
+directory=/app\n\
+autostart=true\n\
+autorestart=true\n\
+stderr_logfile=/var/log/supervisor/eyemei-app.err.log\n\
+stdout_logfile=/var/log/supervisor/eyemei-app.out.log\n\
+environment=PYTHONUNBUFFERED="1"\n\
+\n\
+[program:eyemei-admin]\n\
+command=gunicorn --bind 0.0.0.0:5001 --workers 2 --timeout 120 admin_panel:app\n\
+directory=/app\n\
+autostart=true\n\
+autorestart=true\n\
+stderr_logfile=/var/log/supervisor/eyemei-admin.err.log\n\
+stdout_logfile=/var/log/supervisor/eyemei-admin.out.log\n\
+environment=PYTHONUNBUFFERED="1"\n\
+' > /etc/supervisor/conf.d/eyemei.conf
 
 # Expose ports for both main app and admin panel
 EXPOSE 5000 5001
 
-# Set the startup command
-CMD ["/app/start.sh"]
+# Start supervisor
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]

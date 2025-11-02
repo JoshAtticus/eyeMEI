@@ -4,7 +4,9 @@ This guide explains how to build and run the eyeMEI application using Docker.
 
 ## Quick Start
 
-### Using Docker Compose (Recommended)
+### Using Docker Compose (Recommended - Separate Containers)
+
+This approach runs the main app and admin panel in separate containers, which is the most reliable method.
 
 1. **Build and start the application:**
    ```bash
@@ -17,7 +19,14 @@ This guide explains how to build and run the eyeMEI application using Docker.
 
 3. **View logs:**
    ```bash
+   # All services
    docker-compose logs -f
+   
+   # Main app only
+   docker-compose logs -f eyemei-app
+   
+   # Admin panel only
+   docker-compose logs -f eyemei-admin
    ```
 
 4. **Stop the application:**
@@ -25,7 +34,9 @@ This guide explains how to build and run the eyeMEI application using Docker.
    docker-compose down
    ```
 
-### Using Docker CLI
+### Using Single Container (Alternative - Supervisor)
+
+If you prefer running both services in a single container using supervisor:
 
 1. **Build the Docker image:**
    ```bash
@@ -56,12 +67,23 @@ This guide explains how to build and run the eyeMEI application using Docker.
 
 ## Architecture
 
-The Docker container runs two Flask applications:
+### Separate Container Architecture (docker-compose.yml)
 
-- **Main Application** (Port 5000): The primary eyeMEI lookup service
-- **Admin Panel** (Port 5001): Database management and lookup log review interface
+The recommended setup uses two separate Docker containers:
 
-Both services run under Gunicorn for production-grade performance.
+- **eyemei-app** (Port 5000): The primary eyeMEI lookup service
+  - Runs with 4 Gunicorn workers
+  - Isolated environment prevents conflicts
+  
+- **eyemei-admin** (Port 5001): Database management and lookup log review interface
+  - Runs with 2 Gunicorn workers
+  - Shares database volume with main app
+
+Both services run under Gunicorn for production-grade performance. This architecture eliminates the `GUNICORN_FD` environment variable conflicts that can occur when running multiple Gunicorn instances in a single process space.
+
+### Single Container Architecture (Dockerfile)
+
+The alternative setup uses supervisor to manage both services in one container. This is simpler but slightly less isolated than the multi-container approach.
 
 ## Data Persistence
 

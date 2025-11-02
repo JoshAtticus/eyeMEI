@@ -1,12 +1,14 @@
 version: '3.8'
 
 services:
-  eyemei:
-    build: .
+  # Main eyeMEI application
+  eyemei-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.app
     container_name: eyemei-app
     ports:
-      - "5000:5000"  # Main application
-      - "5001:5001"  # Admin panel
+      - "5000:5000"
     volumes:
       # Mount databases directory to persist data
       - ./databases:/app/databases
@@ -18,6 +20,31 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:5000/')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Admin panel
+  eyemei-admin:
+    build:
+      context: .
+      dockerfile: Dockerfile.admin
+    container_name: eyemei-admin
+    ports:
+      - "5001:5001"
+    volumes:
+      # Share databases directory with main app
+      - ./databases:/app/databases
+      # Mount admin templates
+      - ./admin_templates:/app/admin_templates
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    depends_on:
+      - eyemei-app
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:5001/')"]
       interval: 30s
       timeout: 10s
       retries: 3
